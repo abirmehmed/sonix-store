@@ -1,16 +1,28 @@
-# React + Vite
+# 🎧 SONIX Sound Store
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern e-commerce product page built with **React + Vite** — featuring an
+infinite auto-rotating carousel, arrow controls, click-to-preview hero
+and floating product animations.
 
-Currently, two official plugins are available:
+🔗 **Live site:** https://sonix-store.vercel.app
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Features
 
-## React Compiler
+- ⚛️ React with `useState` / `useEffect` / `useRef`
+- ♾️ Infinite carousel — seamless in both directions
+- 🖱️ Arrow controls + auto-play + pause on hover
+- 🛒 Click any product card → it becomes the hero product
+- 📱 Fully responsive (3 → 2 → 1 cards)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Run locally
 
-## Expanding the ESLint configuration
+npm install
+npm run dev
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+## Tech
+
+React · Vite · CSS Grid & Flexbox · Deployed on Vercel
+
+---
+
+Built by **Abir Mehmed** — [github.com/abirmehmed](https://github.com/abirmehmed)
