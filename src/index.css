@@ -6,7 +6,7 @@ body { font-family: "Segoe UI", Arial, sans-serif; background: #f4f4f6; color: #
 
 .logo { font-weight: 800; letter-spacing: 4px; font-size: 1.4rem; }
 
-.product-grid { display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; gap: 40px; }
+.product-grid { display: grid; grid-template-columns: 1fr 4fr 1fr; align-items: center; gap: 40px; }
 
 .info h1 { font-size: clamp(2.2rem, 3vw, 3.4rem); letter-spacing: 1px; }
 .sub { color: #555; font-size: clamp(1rem, 1.2vw, 1.35rem); margin-top: 6px; max-width: 340px; }
