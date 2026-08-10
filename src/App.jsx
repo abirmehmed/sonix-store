@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 const products = [
   { name: "WH-1000X", sub: "Wireless Noise-Cancelling Headphones", price: "$299.00", img: "/images/headphones.png" },
   { name: "Buds Air", sub: "True wireless earbuds with charging case", price: "$129.00", img: "/images/earbuds.png" },
-  { name: "GX Gaming", sub: "Surround gaming headset with RGB and mic", price: "$149.00", img: "/images/gaming.png" },
+  { name: "GX Gaming", sub: "Surround gaming headset with RGB and mic", price: "$199.00", img: "/images/gaming.png" },
   { name: "Go Speaker", sub: "Portable Bluetooth speaker, 12h battery", price: "$89.00", img: "/images/speaker.png" },
   { name: "Studio Silver", sub: "Limited edition silver wireless headphones", price: "$349.00", img: "/images/silver.png" },
   { name: "Voice One", sub: "USB studio microphone for streaming", price: "$99.00", img: "/images/mic.png" },
