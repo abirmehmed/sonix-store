@@ -1,19 +1,46 @@
 import { useState, useEffect, useRef } from "react";
 
-const products = [
-  { name: "WH-1000X", sub: "Wireless Noise-Cancelling Headphones", price: "$299.00", img: "/images/headphones.png" },
-  { name: "Buds Air", sub: "True wireless earbuds with charging case", price: "$129.00", img: "/images/earbuds.png" },
-  { name: "GX Gaming", sub: "Surround gaming headset with RGB and mic", price: "$199.00", img: "/images/gaming.png" },
-  { name: "Go Speaker", sub: "Portable Bluetooth speaker, 12h battery", price: "$89.00", img: "/images/speaker.png" },
-  { name: "Studio Silver", sub: "Limited edition silver wireless headphones", price: "$399.00", img: "/images/silver.png" },
-  { name: "Voice One", sub: "USB studio microphone for streaming", price: "$99.00", img: "/images/mic.png" },
-];
+const API = "http://localhost:4000/api";
+
+// Small maps so backend data looks like what the carousel expects
+function subFor(cat) {
+  return ({
+    Headphones: "Wireless Noise-Cancelling Headphones",
+    Earbuds:    "True wireless earbuds with charging case",
+    Headset:    "Surround gaming headset with RGB and mic",
+    Speaker:    "Portable Bluetooth speaker, 12h battery",
+    Microphone: "USB studio microphone for streaming",
+  })[cat] || cat;
+}
+
+function imgFor(name) {
+  const map = {
+    "WH-1000X":      "/images/headphones.png",
+    "Buds Air":      "/images/earbuds.png",
+    "GX Gaming":     "/images/gaming.png",
+    "Go Speaker":    "/images/speaker.png",
+    "Studio Silver": "/images/silver.png",
+    "Voice One":     "/images/mic.png",
+  };
+  return map[name] || "/images/headphones.png";
+}
+
+function toProduct(p) {
+  return {
+    name: p.name,
+    sub: subFor(p.category),
+    price: `$${p.price}.00`,
+    img: imgFor(p.name),
+  };
+}
 
 const CLONES = 3;
 
 export default function App() {
-  const [product, setProduct] = useState(products[0]);
+  const [products, setProducts] = useState([]);
+  const [product, setProduct] = useState(null);
   const [added, setAdded] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [index, setIndex] = useState(0);
   const [animate, setAnimate] = useState(false);
@@ -21,7 +48,18 @@ export default function App() {
   const [step, setStep] = useState(0);
   const trackRef = useRef(null);
 
-  // clones on BOTH sides → infinite both ways
+  // Fetch from the kitchen
+  useEffect(() => {
+    fetch(API + "/products")
+      .then((r) => r.json())
+      .then((data) => {
+        const mapped = data.map(toProduct);
+        setProducts(mapped);
+        if (mapped.length) setProduct(mapped[0]);
+        setLoading(false);
+      });
+  }, []);
+
   const track = [
     ...products.slice(-CLONES),
     ...products,
@@ -43,7 +81,6 @@ export default function App() {
     setIndex((i) => (i <= -1 ? i : i - 1));
   }
 
-  // 1) measure card width — always fresh, even after layout changes
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
@@ -53,16 +90,14 @@ export default function App() {
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [products]);
 
-  // 2) auto-play heartbeat (pauses on hover, resets after any slide)
   useEffect(() => {
-    if (paused) return;
+    if (paused || !products.length) return;
     const id = setInterval(next, 3000);
     return () => clearInterval(id);
-  }, [paused, index]);
+  }, [paused, index, products.length]);
 
-  // 3) invisible rewinds at BOTH edges
   useEffect(() => {
     if (index === products.length) {
       const t = setTimeout(() => { setAnimate(false); setIndex(0); }, 650);
@@ -72,7 +107,11 @@ export default function App() {
       const t = setTimeout(() => { setAnimate(false); setIndex(products.length - 1); }, 650);
       return () => clearTimeout(t);
     }
-  }, [index]);
+  }, [index, products.length]);
+
+  if (loading || !product) {
+    return <main className="page"><p>Loading store…</p></main>;
+  }
 
   return (
     <main className="page">
