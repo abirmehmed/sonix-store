@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const API = "http://localhost:4000/api";
+const API = "https://sonix-api-buy8.onrender.com/api";
 
 // Small maps so backend data looks like what the carousel expects
 function subFor(cat) {
