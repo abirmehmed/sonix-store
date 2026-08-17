@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 
-const API = "https://sonix-api-buy8.onrender.com/api";
+const API = "https://sonix-api-huy8.onrender.com/api";
 
 function subFor(cat) {
   return ({
@@ -185,7 +185,7 @@ EOFcd ~/Desktop/EII/first-react
 cat << 'EOF' > src/App.jsx
 import { useState, useEffect, useRef } from "react";
 
-const API = "https://sonix-api-buy8.onrender.com/api";
+const API = "https://sonix-api-huy8.onrender.com/api";
 
 function subFor(cat) {
   return ({
