@@ -2,20 +2,28 @@
 
 body { font-family: "Segoe UI", Arial, sans-serif; background: #f4f4f6; color: #111; }
 
-.page { width: min(2200px, 94%); margin: auto; padding: 40px 0 60px; display: grid; gap: 48px; }
+/* tighter vertical rhythm: 24px top, 40px bottom, 32px between sections */
+.page { width: min(2200px, 94%); margin: auto; padding: 24px 0 40px; display: grid; gap: 32px; }
 
 .logo { font-weight: 800; letter-spacing: 4px; font-size: 1.4rem; }
 
-.product-grid { display: grid; grid-template-columns: 1fr 4fr 1fr; align-items: center; gap: 40px; }
+/* dropped the 3rd column — rating now lives INSIDE .info */
+.product-grid { display: grid; grid-template-columns: 1fr 4fr; align-items: center; gap: 40px; }
 
 .info h1 { font-size: clamp(2.2rem, 3vw, 3.4rem); letter-spacing: 1px; }
 .sub { color: #555; font-size: clamp(1rem, 1.2vw, 1.35rem); margin-top: 6px; max-width: 340px; }
-.price { font-size: clamp(2rem, 2.6vw, 3rem); font-weight: 800; margin-top: 48px; }
-.old-price { color: #999; text-decoration: line-through; }
+.price { font-size: clamp(2rem, 2.6vw, 3rem); font-weight: 800; margin-top: 24px; }
+.old-price { color: #999; text-decoration: line-through; margin-top: 4px; }
+
+/* rating sits just under old-price — where the decision happens */
+.rating { margin-top: 20px; display: flex; align-items: baseline; gap: 12px; }
+.score { font-size: 1.2rem; font-weight: 800; }
+.stars { color: #b08d4a; letter-spacing: 2px; }
+.reviews { color: #777; font-size: 0.9rem; }
 
 .product-img {
   width: 100%;
-  filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.28));
+  filter: drop-shadow(0 24px 32px rgba(0, 0, 0, 0.25));
   animation: float 4s ease-in-out infinite;
 }
 
@@ -23,11 +31,6 @@ body { font-family: "Segoe UI", Arial, sans-serif; background: #f4f4f6; color: #
   0%, 100% { transform: translateY(0); }
   50%      { transform: translateY(-14px); }
 }
-
-.rating { justify-self: end; }
-.score { font-size: 1.4rem; font-weight: 800; }
-.stars { color: #b08d4a; letter-spacing: 2px; }
-.reviews { color: #777; margin-top: 4px; }
 
 .add-to-cart {
   justify-self: center;
@@ -40,35 +43,24 @@ body { font-family: "Segoe UI", Arial, sans-serif; background: #f4f4f6; color: #
 .add-to-cart:hover { transform: translateY(-3px); }
 .add-to-cart.added { background: #16a34a; }
 
-/*.more { display: grid; gap: 24px; justify-self: center; width: min(1200px, 100%); } */
 .more { display: grid; gap: 24px; width: 100%; }
 .more h2 { font-size: 1.4rem; letter-spacing: 1px; }
 .more-sub { color: #777; font-size: 0.95rem; }
 
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-
-.card {
+/* ===== Carousel ===== */
+.carousel { position: relative; overflow: hidden; }
+.track { display: flex; gap: 20px; }
+.track .card {
+  flex: 0 0 calc((100% - 40px) / 3);
   background: #fff; border: none; border-radius: 16px; padding: 20px;
   display: grid; gap: 8px; justify-items: center; text-align: center;
   cursor: pointer; font: inherit;
   transition: transform 0.3s, box-shadow 0.3s;
 }
-.card:hover { transform: translateY(-6px); box-shadow: 0 16px 30px rgba(0, 0, 0, 0.12); }
-.card img { width: 100%; height: 200px; object-fit: contain; }
+.track .card:hover { transform: translateY(-6px); box-shadow: 0 16px 30px rgba(0, 0, 0, 0.12); }
+.track .card img { width: 100%; height: 200px; object-fit: contain; }
+.track .card.active { outline: 2px solid #2b50aa; }
 .p-price { font-weight: 700; }
-
-@media (max-width: 800px) {
-  .product-grid { grid-template-columns: 1fr; justify-items: center; text-align: center; }
-  .rating { justify-self: center; }
-  .cards { grid-template-columns: 1fr; }
-}
-
-/* ===== Carousel ===== */
-.carousel { position: relative; overflow: hidden; }
-
-.track { display: flex; gap: 20px; }
-
-.track .card { flex: 0 0 calc((100% - 40px) / 3); }
 
 .arrow {
   position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
@@ -81,5 +73,60 @@ body { font-family: "Segoe UI", Arial, sans-serif; background: #f4f4f6; color: #
 .arrow.prev { left: 12px; }
 .arrow.next { right: 12px; }
 
+/* Mobile: tighter, calmer, no floating shadows */
+@media (max-width: 800px) {
+  .page { padding: 20px 0 32px; gap: 24px; }
+  .product-grid { grid-template-columns: 1fr; justify-items: center; text-align: center; gap: 24px; }
+  .sub { max-width: none; }
+  .rating { justify-content: center; }
+  .product-img { filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.2)); }
+  .add-to-cart { padding: 14px 60px; width: 90%; max-width: 360px; }
+}
+
 @media (max-width: 900px) { .track .card { flex: 0 0 calc((100% - 20px) / 2); } }
 @media (max-width: 600px) { .track .card { flex: 0 0 100%; } }
+
+/* aesthetic cap: image stops eating the viewport */
+.product-img { max-width: 560px; max-height: 480px; justify-self: center; }
+
+/* ===== v3: big centered hero, buy button on the right ===== */
+.product-grid { grid-template-columns: 1fr 3fr 1fr; gap: 32px; }
+.product-img { max-width: none; max-height: none; width: 100%; }
+.add-to-cart { justify-self: center; padding: 14px 0; width: 100%; max-width: 200px; }
+
+@media (max-width: 800px) {
+  .product-grid { grid-template-columns: 1fr; }
+  .add-to-cart { max-width: 320px; }
+}
+
+/* ===== v4: the cool layout, with air + a background stage ===== */
+body {
+  background: radial-gradient(1100px 520px at 72% 0%, #ffffff 0%, #f4f4f6 60%);
+}
+.page { gap: 64px; padding: 56px 0 80px; }
+.product-grid { grid-template-columns: 1fr 4fr 1fr; gap: 40px; }
+.product-img { max-width: none; max-height: none; width: 100%; }
+.rating { justify-self: end; display: block; text-align: right; margin-top: 0; }
+.add-to-cart { justify-self: center; width: auto; max-width: none; padding: 16px 90px; }
+
+@media (max-width: 800px) {
+  .page { gap: 40px; padding: 32px 0 56px; }
+  .product-grid { grid-template-columns: 1fr; }
+  .rating { justify-self: center; text-align: center; }
+  .add-to-cart { width: 90%; max-width: 360px; padding: 14px 0; }
+}
+
+/* ===== fun loader: the SONIX equalizer ===== */
+.loader-page { min-height: 80vh; display: grid; place-items: center; align-content: center; gap: 28px; }
+.eq { display: flex; gap: 7px; align-items: flex-end; height: 64px; }
+.eq span { width: 10px; border-radius: 5px; background: #2b50aa; animation: eq 1s ease-in-out infinite; }
+.eq span:nth-child(1) { animation-delay: 0s; }
+.eq span:nth-child(2) { animation-delay: 0.15s; }
+.eq span:nth-child(3) { animation-delay: 0.3s; }
+.eq span:nth-child(4) { animation-delay: 0.45s; }
+.eq span:nth-child(5) { animation-delay: 0.6s; }
+@keyframes eq {
+  0%, 100% { height: 18%; }
+  50%      { height: 100%; }
+}
+.loader-line { color: #555; letter-spacing: 1px; font-size: 1.05rem; }

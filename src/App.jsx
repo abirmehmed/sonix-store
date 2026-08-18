@@ -1,6 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 
-const API = "https://sonix-api-huy8.onrender.com/api";
+const API = window.location.hostname === "localhost"
+  ? "http://localhost:4000/api"
+  : "https://sonix-api-huy8.onrender.com/api";
+
+const LOADER_LINES = [
+  "Waking the kitchen… 😴",
+  "Polishing the headphones… ✨",
+  "Warming up the amps… 🔊",
+  "Untangling headphone cables… 🎧",
+  "Dropping the bass… 🎵",
+];
 
 function subFor(cat) {
   return ({
@@ -25,7 +35,15 @@ function imgFor(name) {
 }
 
 function toProduct(p) {
-  return { name: p.name, sub: subFor(p.category), price: `$${p.price}.00`, img: imgFor(p.name) };
+  return {
+    name: p.name,
+    sub: subFor(p.category),
+    price: `$${p.price}.00`,
+    oldPrice: `$${p.old || p.price + 50}.00`,
+    rating: p.rating || 4.5,
+    reviews: p.reviews || 127,
+    img: imgFor(p.name),
+  };
 }
 
 const CLONES = 3;
@@ -35,12 +53,14 @@ export default function App() {
   const [product, setProduct] = useState(null);
   const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [line, setLine] = useState(0);
 
   const [index, setIndex] = useState(0);
   const [animate, setAnimate] = useState(false);
   const [paused, setPaused] = useState(false);
   const [step, setStep] = useState(0);
   const trackRef = useRef(null);
+  const wheelLock = useRef(0);
 
   useEffect(() => {
     let alive = true;
@@ -55,12 +75,18 @@ export default function App() {
           setLoading(false);
         })
         .catch(() => {
-          if (alive) setTimeout(load, 3000); // kitchen napping → knock again in 3s
+          if (alive) setTimeout(load, 3000);
         });
     }
     load();
     return () => { alive = false; };
   }, []);
+
+  useEffect(() => {
+    if (!loading) return;
+    const id = setInterval(() => setLine((l) => (l + 1) % LOADER_LINES.length), 1200);
+    return () => clearInterval(id);
+  }, [loading]);
 
   const track = [
     ...products.slice(-CLONES),
@@ -81,6 +107,14 @@ export default function App() {
   function prev() {
     setAnimate(true);
     setIndex((i) => (i <= -1 ? i : i - 1));
+  }
+
+  function onWheel(e) {
+    const now = Date.now();
+    if (now - wheelLock.current < 700) return;
+    wheelLock.current = now;
+    if ((e.deltaX || e.deltaY) > 0) next();
+    else prev();
   }
 
   useEffect(() => {
@@ -113,8 +147,11 @@ export default function App() {
 
   if (loading || !product) {
     return (
-      <main className="page">
-        <p>Waking the kitchen… 😴 (free servers nap ~50s)</p>
+      <main className="page loader-page">
+        <div className="eq">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <p className="loader-line">{LOADER_LINES[line]}</p>
       </main>
     );
   }
@@ -128,14 +165,20 @@ export default function App() {
           <h1>{product.name}</h1>
           <p className="sub">{product.sub}</p>
           <p className="price">{product.price}</p>
-          <p className="old-price">Was $349.00</p>
+          <p className="old-price">Was {product.oldPrice}</p>
         </div>
 
         <img className="product-img" src={product.img} alt={product.name} />
 
         <div className="rating">
-          <p className="score">4.8 <span className="stars">★★★★★</span></p>
-          <p className="reviews">1,247 reviews</p>
+          <p className="score">
+            {product.rating}{" "}
+            <span className="stars">
+              {"★".repeat(Math.round(product.rating))}
+              {"☆".repeat(5 - Math.round(product.rating))}
+            </span>
+          </p>
+          <p className="reviews">{product.reviews.toLocaleString()} reviews</p>
         </div>
       </section>
 
@@ -145,12 +188,13 @@ export default function App() {
 
       <section className="more">
         <h2>More from SONIX</h2>
-        <p className="more-sub">Click a product to preview it above 👆</p>
+        <p className="more-sub">Click a product to preview it above 👆 — or just scroll the row</p>
 
         <div
           className="carousel"
           onMouseEnter={() => setPaused(true)}
           onMouseLeave={() => setPaused(false)}
+          onWheel={onWheel}
         >
           <button className="arrow prev" onClick={prev} aria-label="Previous products">‹</button>
 
