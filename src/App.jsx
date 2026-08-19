@@ -38,6 +38,7 @@ function toProduct(p) {
   return {
     name: p.name,
     sub: subFor(p.category),
+    num: p.price,
     price: `$${p.price}.00`,
     oldPrice: `$${p.old || p.price + 50}.00`,
     rating: p.rating || 4.5,
@@ -54,6 +55,10 @@ export default function App() {
   const [added, setAdded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [line, setLine] = useState(0);
+
+  const [cart, setCart] = useState([]);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [ordered, setOrdered] = useState(false);
 
   const [index, setIndex] = useState(0);
   const [animate, setAnimate] = useState(false);
@@ -94,9 +99,32 @@ export default function App() {
     ...products.slice(0, CLONES),
   ];
 
+  const cartCount = cart.reduce((s, i) => s + i.qty, 0);
+  const cartTotal = cart.reduce((s, i) => s + i.num * i.qty, 0);
+
   function addToCart() {
+    setCart((c) => {
+      const found = c.find((i) => i.name === product.name);
+      if (found) {
+        return c.map((i) => (i.name === product.name ? { ...i, qty: i.qty + 1 } : i));
+      }
+      return [...c, { name: product.name, num: product.num, qty: 1 }];
+    });
     setAdded(true);
-    setTimeout(() => setAdded(false), 2000);
+    setTimeout(() => setAdded(false), 1500);
+  }
+
+  function changeQty(name, d) {
+    setCart((c) => c.map((i) => (i.name === name ? { ...i, qty: i.qty + d } : i)).filter((i) => i.qty > 0));
+  }
+
+  function checkout() {
+    setOrdered(true);
+    setCart([]);
+    setTimeout(() => {
+      setOrdered(false);
+      setCartOpen(false);
+    }, 1800);
   }
 
   function next() {
@@ -158,7 +186,13 @@ export default function App() {
 
   return (
     <main className="page">
-      <header className="logo">SONIX</header>
+      <div className="topbar">
+        <span className="logo">SONIX</span>
+        <button className="cart-btn" onClick={() => setCartOpen(true)} aria-label="Open cart">
+          🛒
+          {cartCount > 0 && <span className="cart-count">{cartCount}</span>}
+        </button>
+      </div>
 
       <section className="product-grid">
         <div className="info">
@@ -222,6 +256,37 @@ export default function App() {
           <button className="arrow next" onClick={next} aria-label="Next products">›</button>
         </div>
       </section>
+
+      {cartOpen && (
+        <aside className="cart-drawer">
+          <div className="cart-head">
+            <h2>Your Cart 🛒</h2>
+            <button onClick={() => setCartOpen(false)} aria-label="Close cart">✕</button>
+          </div>
+
+          {cart.length === 0 ? (
+            <p className="muted">
+              {ordered ? "Order placed! 🎉 Ka-ching." : "Empty… like a drum solo without drums. 🥁"}
+            </p>
+          ) : (
+            <>
+              <ul className="cart-list">
+                {cart.map((i) => (
+                  <li key={i.name}>
+                    <span>{i.name}</span><span className="qty"><button onClick={() => changeQty(i.name, -1)}>−</button><b>{i.qty}</b><button onClick={() => changeQty(i.name, 1)}>+</button></span>
+                    <span>${(i.num * i.qty).toFixed(2)}</span>
+                  </li>
+                ))}
+              </ul>
+              <div className="cart-total">
+                <strong>Total</strong>
+                <strong>${cartTotal.toFixed(2)}</strong>
+              </div>
+              <button className="add-to-cart" onClick={checkout}>Checkout 💳</button>
+            </>
+          )}
+        </aside>
+      )}
     </main>
   );
 }
