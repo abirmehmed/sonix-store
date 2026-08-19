@@ -4,12 +4,13 @@ const API = window.location.hostname === "localhost"
   ? "http://localhost:4000/api"
   : "https://sonix-api-huy8.onrender.com/api";
 
-const LOADER_LINES = [
-  "Waking the kitchen… 😴",
-  "Polishing the headphones… ✨",
-  "Warming up the amps… 🔊",
-  "Untangling headphone cables… 🎧",
-  "Dropping the bass… 🎵",
+const FALLBACK = [
+  { id: 1, name: "WH-1000X", category: "Headphones", price: 299, old: 349, rating: 4.8, reviews: 1247 },
+  { id: 2, name: "Buds Air", category: "Earbuds", price: 129, old: 179, rating: 4.5, reviews: 832 },
+  { id: 3, name: "GX Gaming", category: "Headset", price: 149, old: 199, rating: 4.7, reviews: 2154 },
+  { id: 4, name: "Go Speaker", category: "Speaker", price: 89, old: 119, rating: 4.2, reviews: 415 },
+  { id: 5, name: "Studio Silver", category: "Headphones", price: 349, old: 449, rating: 4.9, reviews: 156 },
+  { id: 6, name: "Voice One", category: "Microphone", price: 99, old: 149, rating: 4.6, reviews: 978 },
 ];
 
 function subFor(cat) {
@@ -50,11 +51,9 @@ function toProduct(p) {
 const CLONES = 3;
 
 export default function App() {
-  const [products, setProducts] = useState([]);
-  const [product, setProduct] = useState(null);
+  const [products, setProducts] = useState(() => FALLBACK.map(toProduct));
+  const [product, setProduct] = useState(() => toProduct(FALLBACK[0]));
   const [added, setAdded] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [line, setLine] = useState(0);
 
   const [cart, setCart] = useState([]);
   const [cartOpen, setCartOpen] = useState(false);
@@ -67,31 +66,25 @@ export default function App() {
   const trackRef = useRef(null);
   const wheelLock = useRef(0);
 
+  // instant paint from FALLBACK, then sync with the kitchen in background
   useEffect(() => {
     let alive = true;
-    function load() {
+    function sync() {
       fetch(API + "/products")
         .then((r) => r.json())
         .then((data) => {
-          if (!alive) return;
+          if (!alive || !data.length) return;
           const mapped = data.map(toProduct);
           setProducts(mapped);
-          if (mapped.length) setProduct(mapped[0]);
-          setLoading(false);
+          setProduct((cur) => mapped.find((m) => m.name === cur.name) || mapped[0]);
         })
         .catch(() => {
-          if (alive) setTimeout(load, 3000);
+          if (alive) setTimeout(sync, 5000);
         });
     }
-    load();
+    sync();
     return () => { alive = false; };
   }, []);
-
-  useEffect(() => {
-    if (!loading) return;
-    const id = setInterval(() => setLine((l) => (l + 1) % LOADER_LINES.length), 1200);
-    return () => clearInterval(id);
-  }, [loading]);
 
   const track = [
     ...products.slice(-CLONES),
@@ -115,10 +108,24 @@ export default function App() {
   }
 
   function changeQty(name, d) {
-    setCart((c) => c.map((i) => (i.name === name ? { ...i, qty: i.qty + d } : i)).filter((i) => i.qty > 0));
+    setCart((c) =>
+      c
+        .map((i) => (i.name === name ? { ...i, qty: i.qty + d } : i))
+        .filter((i) => i.qty > 0)
+    );
   }
 
   function checkout() {
+    const order = {
+      customer: "Web Customer",
+      items: cart.map((i) => ({ name: i.name, qty: i.qty })),
+      total: Number(cartTotal.toFixed(2)),
+    };
+    fetch(API + "/orders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(order),
+    }).catch(() => {});
     setOrdered(true);
     setCart([]);
     setTimeout(() => {
@@ -172,17 +179,6 @@ export default function App() {
       return () => clearTimeout(t);
     }
   }, [index, products.length]);
-
-  if (loading || !product) {
-    return (
-      <main className="page loader-page">
-        <div className="eq">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
-        <p className="loader-line">{LOADER_LINES[line]}</p>
-      </main>
-    );
-  }
 
   return (
     <main className="page">
@@ -273,7 +269,12 @@ export default function App() {
               <ul className="cart-list">
                 {cart.map((i) => (
                   <li key={i.name}>
-                    <span>{i.name}</span><span className="qty"><button onClick={() => changeQty(i.name, -1)}>−</button><b>{i.qty}</b><button onClick={() => changeQty(i.name, 1)}>+</button></span>
+                    <span>{i.name}</span>
+                    <span className="qty">
+                      <button onClick={() => changeQty(i.name, -1)} aria-label="Decrease">−</button>
+                      <b>{i.qty}</b>
+                      <button onClick={() => changeQty(i.name, 1)} aria-label="Increase">+</button>
+                    </span>
                     <span>${(i.num * i.qty).toFixed(2)}</span>
                   </li>
                 ))}
